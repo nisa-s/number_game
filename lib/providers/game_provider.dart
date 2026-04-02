@@ -76,17 +76,24 @@ class GameProvider extends ChangeNotifier {
 
   /// Kişi 3: Blok seçim zinciri
   void selectBlock(int row, int col) {
-    // TODO: Kişi 3 implement edecek
+    // 1. Komşuluk kontrolü yap (yatay, dikey, çapraz)
+    // 2. Seçim sınırını kontrol et (en az 2, en fazla 4 blok)
+    // 3. Bloğu seçili işaretle ve zincire ekle
   }
 
   /// Kişi 4: Onay butonu – seçili blokları doğrula
-  void confirmSelection() {
-    // TODO: Kişi 4 implement edecek
+  void confirmMove() {
+    // 1. Toplamı kontrol et (sum == targetNumber?)
+    // 2. Doğruysa: handleCorrectMove() çağır (Puan ekle, patlat, hız kontrol)
+    // 3. Yanlışsa: handleWrongMove() çağır (wrongCount++, ceza kontrol)
+    // 4. Her durumda: clearChain() (Seçimi temizle)
   }
 
   /// Kişi 4: Yanlış seçim sayacını artır
   void incrementWrongCount() {
-    // TODO: Kişi 4 implement edecek
+    // 1. wrongCount değerini artır
+    // 2. Eğer 3 olduysa ceza uygula (tüm sütunlara blok indir)
+    // 3. Sayacı sıfırla
   }
 
   @override

@@ -71,7 +71,7 @@ class GameScreen extends StatelessWidget {
             _BottomBar(
               onStart: provider.startGame,
               onRestart: provider.restartGame,
-              onConfirm: provider.confirmSelection, // Kişi 4 dolduracak
+              onConfirm: provider.confirmMove, // Kişi 4 dolduracak
             ),
 
             const SizedBox(height: 8),
@@ -121,7 +121,7 @@ class _TopBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF7C4DFF).withOpacity(0.5),
+                  color: const Color(0xFF7C4DFF).withValues(alpha:0.5),
                   blurRadius: 12,
                 ),
               ],
@@ -155,7 +155,7 @@ class _TopBar extends StatelessWidget {
             children: [
               _InfoChip(
                 label: 'YANLIŞ',
-                value: '${wrongCount}/3',
+                value: '$wrongCount/3',
                 valueColor: wrongCount >= 2 ? Colors.red : null,
               ),
               const SizedBox(height: 4),
@@ -274,7 +274,7 @@ class _GameButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.2),
+        backgroundColor: color.withValues(alpha:0.2),
         foregroundColor: color,
         side: BorderSide(color: color, width: 1.5),
         shape: RoundedRectangleBorder(
@@ -314,7 +314,7 @@ class _GameOverOverlay extends StatelessWidget {
           border: Border.all(color: const Color(0xFFFF6E40), width: 2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF6E40).withOpacity(0.3),
+              color: const Color(0xFFFF6E40).withValues(alpha:0.3),
               blurRadius: 30,
             ),
           ],
