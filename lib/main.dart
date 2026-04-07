@@ -18,7 +18,7 @@ class StrategicNumberGame extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => GameProvider(),
       child: MaterialApp(
-        title: 'Stratejik Sayı Birleştirme',
+        title: 'Number Chain Game',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: const Color(0xFF0F0F23),
@@ -111,7 +111,7 @@ class _TopBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Puan
-          _InfoChip(label: 'PUAN', value: '$score'),
+          _InfoChip(label: 'SCORE', value: '$score'),
 
           // Hedef sayı (Kişi 3 tarafından kullanılacak)
           Container(
@@ -130,7 +130,7 @@ class _TopBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'HEDEF',
+                  'TARGET',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 10,
@@ -154,12 +154,12 @@ class _TopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _InfoChip(
-                label: 'YANLIŞ',
+                label: 'MISTAKES',
                 value: '$wrongCount/3',
                 valueColor: wrongCount >= 2 ? Colors.red : null,
               ),
               const SizedBox(height: 4),
-              _InfoChip(label: 'HIZ', value: '${dropInterval}sn'),
+              _InfoChip(label: 'SPEED', value: '${dropInterval}s'),
             ],
           ),
         ],
@@ -226,7 +226,7 @@ class _BottomBar extends StatelessWidget {
           // Başlat butonu
           Expanded(
             child: _GameButton(
-              label: 'BAŞLAT',
+              label: 'START',
               color: const Color(0xFF00E5FF),
               onPressed: onStart,
             ),
@@ -237,7 +237,7 @@ class _BottomBar extends StatelessWidget {
           Expanded(
             flex: 2,
             child: _GameButton(
-              label: 'ONAYLA ✓',
+              label: 'CHAIN ✓',
               color: const Color(0xFF7C4DFF),
               onPressed: onConfirm,
             ),
@@ -247,7 +247,7 @@ class _BottomBar extends StatelessWidget {
           // Yeniden başlat
           Expanded(
             child: _GameButton(
-              label: 'YENİDEN',
+              label: 'RESTART',
               color: const Color(0xFFFF6E40),
               onPressed: onRestart,
             ),
@@ -323,7 +323,7 @@ class _GameOverOverlay extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'OYUN BİTTİ',
+              'GAME OVER',
               style: TextStyle(
                 color: Color(0xFFFF6E40),
                 fontSize: 28,
@@ -333,7 +333,7 @@ class _GameOverOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Skorun: $score',
+              'Your Score: $score',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -353,7 +353,7 @@ class _GameOverOverlay extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'TEKRAR OYNA',
+                'TRY AGAIN',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),

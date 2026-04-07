@@ -42,7 +42,7 @@ class DropService {
     }
 
     final col = availableCols[_random.nextInt(availableCols.length)];
-    final newBlock = BlockModel(number: _random.nextInt(9) + 1);
+    final newBlock = BlockModel(number: _random.nextInt(9) + 1, row: 0, col: col);
 
     return state.copyWith(
       fallingBlock: newBlock,
@@ -147,7 +147,7 @@ class DropService {
     final newGrid = _copyGrid(state.grid);
     newGrid[row][col] = block;
 
-    // Oyun sonu: herhangi bir sütunun 0. satırı doldu mu?
+    // Oyun sonu: herhangi bir blok EN ÜST satıra (index 0) ulaştı mı?
     final isGameOver = newGrid[0].any((cell) => cell != null);
 
     return state.copyWith(

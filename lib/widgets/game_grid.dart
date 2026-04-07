@@ -86,7 +86,7 @@ class _GridCell extends StatelessWidget {
           boxShadow: block != null
               ? [
                   BoxShadow(
-                    color: block!.color.withOpacity(0.4),
+                    color: block!.color.withValues(alpha:0.4),
                     blurRadius: 4,
                     spreadRadius: 1,
                   )

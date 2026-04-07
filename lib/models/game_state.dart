@@ -1,5 +1,6 @@
 // lib/models/game_state.dart
 // Kişi 1 – Grid & Başlangıç sorumluluğu
+// (Kişi 3 tarafından selectionChain alanı eklendi)
 
 import 'dart:math';
 import 'block_model.dart';
@@ -30,6 +31,9 @@ class GameState {
   /// Düşmekte olan blok
   final BlockModel? fallingBlock;
 
+  /// Kişi 3: Seçim zinciri – sıralı blok listesi
+  final List<BlockModel> selectionChain;
+
   GameState({
     required this.grid,
     required this.targetNumber,
@@ -39,9 +43,10 @@ class GameState {
     this.fallingCol,
     this.fallingRow,
     this.fallingBlock,
+    this.selectionChain = const [],
   });
 
-  /// Başlangıç durumu: ilk 3 satır rastgele dolu
+  /// Başlangıç durumu: son 3 satır rastgele dolu
   factory GameState.initial() {
     final random = Random();
     final grid = List.generate(
@@ -49,27 +54,29 @@ class GameState {
       (row) => List.generate(
         kGridCols,
         (col) {
-          // Sadece son 3 satır (index 7, 8, 9) dolu başlar
           if (row >= kGridRows - kInitialFilledRows) {
-            return BlockModel(number: random.nextInt(9) + 1);
+            return BlockModel(
+              number: random.nextInt(9) + 1,
+              row: row,
+              col: col,
+            );
           }
           return null;
         },
       ),
     );
-
     return GameState(
       grid: grid,
       targetNumber: _generateTargetNumber(random),
     );
   }
 
-  /// Rastgele hedef sayı üretir (2-36 arası makul bir değer)
+  /// Rastgele hedef sayı üretir (2-36 arası)
   static int _generateTargetNumber(Random random) {
     return random.nextInt(35) + 2;
   }
 
-  /// Mevcut puana göre düşme aralığını döner (saniye cinsinden)
+  /// Puana göre düşme aralığı (saniye)
   int get dropIntervalSeconds {
     if (score >= 400) return 1;
     if (score >= 300) return 2;
@@ -78,18 +85,20 @@ class GameState {
     return kInitialDropIntervalSec;
   }
 
-  /// Belirtilen sütun tamamen dolu mu? (oyun sonu kontrolü)
-  bool isColumnFull(int col) {
-    return grid[0][col] != null;
-  }
+  /// Belirtilen sütun dolu mu?
+  bool isColumnFull(int col) => grid[0][col] != null;
 
-  /// Herhangi bir sütun tamamen doldu mu?
+  /// Herhangi bir sütun dolu mu?
   bool get anyColumnFull {
     for (int col = 0; col < kGridCols; col++) {
       if (isColumnFull(col)) return true;
     }
     return false;
   }
+
+  /// Seçim zincirinin toplamı
+  int get chainSum =>
+      selectionChain.fold(0, (sum, b) => sum + b.number);
 
   GameState copyWith({
     List<List<BlockModel?>>? grid,
@@ -101,6 +110,7 @@ class GameState {
     int? fallingRow,
     BlockModel? fallingBlock,
     bool clearFalling = false,
+    List<BlockModel>? selectionChain,
   }) {
     return GameState(
       grid: grid ?? this.grid,
@@ -111,6 +121,7 @@ class GameState {
       fallingCol: clearFalling ? null : (fallingCol ?? this.fallingCol),
       fallingRow: clearFalling ? null : (fallingRow ?? this.fallingRow),
       fallingBlock: clearFalling ? null : (fallingBlock ?? this.fallingBlock),
+      selectionChain: selectionChain ?? this.selectionChain,
     );
   }
 }
