@@ -1,5 +1,4 @@
 // lib/services/selection_service.dart
-// Kişi 3 – Seçim & Hedef Sayı sorumluluğu
 
 import '../models/block_model.dart';
 import '../models/game_state.dart';

@@ -1,5 +1,4 @@
 // lib/services/drop_service.dart
-// Kişi 2 – Düşme Mekaniği sorumluluğu
 //
 // Bu servis şu işlemleri yönetir:
 //   1. Üstten rastgele blok üretme

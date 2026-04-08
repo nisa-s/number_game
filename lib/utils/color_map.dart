@@ -1,5 +1,4 @@
 // lib/utils/color_map.dart
-// Kişi 1 – Grid & Başlangıç sorumluluğu
 
 import 'package:flutter/material.dart';
 

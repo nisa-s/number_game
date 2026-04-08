@@ -1,5 +1,4 @@
 // lib/utils/constants.dart
-// Kişi 1 – Grid & Başlangıç sorumluluğu
 
 const int kGridCols = 8;
 const int kGridRows = 10;

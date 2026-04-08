@@ -1,6 +1,4 @@
 // lib/models/block_model.dart
-// Kişi 1 – Grid & Başlangıç sorumluluğu
-// (Kişi 3 tarafından row/col alanları eklendi)
 
 import 'package:flutter/material.dart';
 import '../utils/color_map.dart';

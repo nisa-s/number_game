@@ -1,5 +1,4 @@
 // lib/services/move_service.dart
-// Kişi 4 – Doğru/Yanlış İşlem sorumluluğu
 //
 // Şunları yönetir:
 //   1. Doğru hamle: blok patlatma + compact + yeni target
@@ -72,35 +71,42 @@ class MoveService {
   }
 
   // ─────────────────────────────────────────────
-  // 3. CEZA MEKANİZMASI
-  // ─────────────────────────────────────────────
+// 3. CEZA MEKANİZMASI
+// ─────────────────────────────────────────────
 
-  /// Tüm sütunların tepesine 1 blok indirir (akış diyagramına göre).
-  /// Eğer herhangi sütunun 0. satırı doluysa oyun biter.
-  GameState _applyPenalty(GameState state) {
-    final newGrid = _copyGrid(state.grid);
+/// Tüm sütunların tepesine 1 blok indirir.
+/// Herhangi bir sütun tamamen dolarsa (10 satır) oyun biter.
+GameState _applyPenalty(GameState state) {
+  final newGrid = _copyGrid(state.grid);
 
-    // Her sütuna üstten yeni blok ekle: tüm satırları 1 aşağı kaydır,
-    // row 0'a yeni blok yaz
-    for (int col = 0; col < kGridCols; col++) {
-      // En alta yer var mı kontrol et; yoksa zaten dolmuş (game over)
-      // Satırları aşağıdan yukarı kaydır
-      for (int row = kGridRows - 1; row > 0; row--) {
-        newGrid[row][col] = newGrid[row - 1][col]?.copyWith(row: row);
+  for (int col = 0; col < kGridCols; col++) {
+    // ✅ O sütunda en alttaki boş satırı bul
+    int? emptyRow;
+    for (int row = kGridRows - 1; row >= 0; row--) {
+      if (newGrid[row][col] == null) {
+        emptyRow = row;
+        break;
       }
-      // 0. satıra yeni blok
-      newGrid[0][col] = BlockModel(
+    }
+
+    // Boş yer varsa oraya yeni bloğu yerleştir
+    if (emptyRow != null) {
+      newGrid[emptyRow][col] = BlockModel(
         number: _random.nextInt(9) + 1,
-        row: 0,
+        row: emptyRow,
         col: col,
       );
     }
-
-    // Oyun sonu kontrolü: herhangi son satır doldu mu?
-    final isGameOver = newGrid[kGridRows - 1].any((c) => c != null);
-
-    return state.copyWith(grid: newGrid, isGameOver: isGameOver);
   }
+
+  // Herhangi bir sütun tamamen doldu mu?
+  final isGameOver = List.generate(kGridCols, (col) {
+    return List.generate(kGridRows, (row) => newGrid[row][col])
+        .every((b) => b != null);
+  }).any((columnFull) => columnFull);
+
+  return state.copyWith(grid: newGrid, isGameOver: isGameOver);
+}
 
   // ─────────────────────────────────────────────
   // YARDIMCI: COMPACT (üstekiler aşağı kayar)

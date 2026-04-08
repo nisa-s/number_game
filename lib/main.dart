@@ -1,5 +1,4 @@
 // lib/main.dart
-// Kişi 2 – Düşme Mekaniği sorumluluğu
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

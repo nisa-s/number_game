@@ -1,6 +1,4 @@
 // lib/models/game_state.dart
-// Kişi 1 – Grid & Başlangıç sorumluluğu
-// (Kişi 3 tarafından selectionChain alanı eklendi)
 
 import 'dart:math';
 import 'block_model.dart';

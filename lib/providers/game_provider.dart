@@ -1,5 +1,4 @@
 // lib/providers/game_provider.dart
-// Kişi 4 – confirmMove() ve incrementWrongCount() dolduruldu
 
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';

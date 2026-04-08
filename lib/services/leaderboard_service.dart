@@ -1,5 +1,4 @@
 // lib/services/leaderboard_service.dart
-// Kişi 4 – Liderlik tablosu servisi
 
 import '../models/score_entry.dart';
 

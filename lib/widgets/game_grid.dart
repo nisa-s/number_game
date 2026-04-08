@@ -1,5 +1,4 @@
 // lib/widgets/game_grid.dart
-// Kişi 2 – Düşme Mekaniği sorumluluğu
 //
 // 8x10 grid widget'ı. Hem yerleşik blokları hem de
 // anlık düşen bloğu çizer.
