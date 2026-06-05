@@ -29,8 +29,21 @@ class GameState {
   /// Düşmekte olan blok
   final BlockModel? fallingBlock;
 
-  /// Kişi 3: Seçim zinciri – sıralı blok listesi
+  /// Seçim zinciri – sıralı blok listesi
   final List<BlockModel> selectionChain;
+
+  // ── İstatistik alanları ──────────────────────
+  /// Toplam doğru hamle sayısı
+  final int correctMoves;
+
+  /// Toplam yanlış hamle sayısı
+  final int totalWrongMoves;
+
+  /// Toplam ceza sayısı (3 yanlışta 1 ceza)
+  final int penaltyCount;
+
+  /// Oyunun başlangıç zamanı (süre hesabı için)
+  final DateTime startTime;
 
   GameState({
     required this.grid,
@@ -42,30 +55,28 @@ class GameState {
     this.fallingRow,
     this.fallingBlock,
     this.selectionChain = const [],
-  });
+    this.correctMoves = 0,
+    this.totalWrongMoves = 0,
+    this.penaltyCount = 0,
+    DateTime? startTime,
+  }) : startTime = startTime ?? DateTime.now();
 
   /// Başlangıç durumu: son 3 satır rastgele dolu
   factory GameState.initial() {
     final random = Random();
     final grid = List.generate(
       kGridRows,
-      (row) => List.generate(
-        kGridCols,
-        (col) {
-          if (row >= kGridRows - kInitialFilledRows) {
-            return BlockModel(
-              number: random.nextInt(9) + 1,
-              row: row,
-              col: col,
-            );
-          }
-          return null;
-        },
-      ),
+      (row) => List.generate(kGridCols, (col) {
+        if (row >= kGridRows - kInitialFilledRows) {
+          return BlockModel(number: random.nextInt(9) + 1, row: row, col: col);
+        }
+        return null;
+      }),
     );
     return GameState(
       grid: grid,
       targetNumber: _generateTargetNumber(random),
+      startTime: DateTime.now(),
     );
   }
 
@@ -83,6 +94,9 @@ class GameState {
     return kInitialDropIntervalSec;
   }
 
+  /// Oyun süresi (saniye)
+  int get elapsedSeconds => DateTime.now().difference(startTime).inSeconds;
+
   /// Belirtilen sütun dolu mu?
   bool isColumnFull(int col) => grid[0][col] != null;
 
@@ -95,8 +109,7 @@ class GameState {
   }
 
   /// Seçim zincirinin toplamı
-  int get chainSum =>
-      selectionChain.fold(0, (sum, b) => sum + b.number);
+  int get chainSum => selectionChain.fold(0, (sum, b) => sum + b.number);
 
   GameState copyWith({
     List<List<BlockModel?>>? grid,
@@ -109,6 +122,10 @@ class GameState {
     BlockModel? fallingBlock,
     bool clearFalling = false,
     List<BlockModel>? selectionChain,
+    int? correctMoves,
+    int? totalWrongMoves,
+    int? penaltyCount,
+    DateTime? startTime,
   }) {
     return GameState(
       grid: grid ?? this.grid,
@@ -120,6 +137,10 @@ class GameState {
       fallingRow: clearFalling ? null : (fallingRow ?? this.fallingRow),
       fallingBlock: clearFalling ? null : (fallingBlock ?? this.fallingBlock),
       selectionChain: selectionChain ?? this.selectionChain,
+      correctMoves: correctMoves ?? this.correctMoves,
+      totalWrongMoves: totalWrongMoves ?? this.totalWrongMoves,
+      penaltyCount: penaltyCount ?? this.penaltyCount,
+      startTime: startTime ?? this.startTime,
     );
   }
 }

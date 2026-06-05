@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/game_provider.dart';
 import 'widgets/game_grid.dart';
+import 'screens/leaderboard_screen.dart';
 
 void main() {
   runApp(const StrategicNumberGame());
@@ -44,35 +45,38 @@ class GameScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Üst bilgi çubuğu ──────────────────────────────
             _TopBar(
               score: state.score,
               targetNumber: state.targetNumber,
               wrongCount: state.wrongCount,
               dropInterval: state.dropIntervalSeconds,
+              onLeaderboard: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
+              ),
             ),
-
             const SizedBox(height: 8),
-
-            // ── Oyun gridi ────────────────────────────────────
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: state.isGameOver
-                    ? _GameOverOverlay(score: state.score)
+                    ? _GameOverOverlay(
+                        score: state.score,
+                        correctMoves: state.correctMoves,
+                        totalWrongMoves: state.totalWrongMoves,
+                        penaltyCount: state.penaltyCount,
+                        elapsedSeconds: state.elapsedSeconds,
+                      )
                     : const GameGrid(),
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // ── Alt kontrol çubuğu ────────────────────────────
             _BottomBar(
               onStart: provider.startGame,
               onRestart: provider.restartGame,
-              onConfirm: provider.confirmMove, // Kişi 4 dolduracak
+              onConfirm: provider.confirmMove,
+              chainLength: state.selectionChain.length,
             ),
-
             const SizedBox(height: 8),
           ],
         ),
@@ -90,12 +94,14 @@ class _TopBar extends StatelessWidget {
   final int targetNumber;
   final int wrongCount;
   final int dropInterval;
+  final VoidCallback onLeaderboard;
 
   const _TopBar({
     required this.score,
     required this.targetNumber,
     required this.wrongCount,
     required this.dropInterval,
+    required this.onLeaderboard,
   });
 
   @override
@@ -109,10 +115,53 @@ class _TopBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Puan
-          _InfoChip(label: 'SCORE', value: '$score'),
+          // Puan + liderlik butonu
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _InfoChip(label: 'SCORE', value: '$score'),
+              const SizedBox(height: 4),
+              GestureDetector(
+                onTap: onLeaderboard,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.leaderboard,
+                        color: Color(0xFF00E5FF),
+                        size: 12,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'TOP 10',
+                        style: TextStyle(
+                          color: Color(0xFF00E5FF),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
 
-          // Hedef sayı (Kişi 3 tarafından kullanılacak)
+          // Hedef sayı
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
@@ -120,28 +169,20 @@ class _TopBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF7C4DFF).withValues(alpha:0.5),
+                  color: const Color(0xFF7C4DFF).withValues(alpha: 0.5),
                   blurRadius: 12,
                 ),
               ],
             ),
-            child: Column(
+            child: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'TARGET',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 10,
                     letterSpacing: 2,
-                  ),
-                ),
-                Text(
-                  '$targetNumber',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -209,20 +250,23 @@ class _BottomBar extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onRestart;
   final VoidCallback onConfirm;
+  final int chainLength;
 
   const _BottomBar({
     required this.onStart,
     required this.onRestart,
     required this.onConfirm,
+    required this.chainLength,
   });
 
   @override
   Widget build(BuildContext context) {
+    final canConfirm = chainLength >= 2 && chainLength <= 4;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          // Başlat butonu
           Expanded(
             child: _GameButton(
               label: 'START',
@@ -231,19 +275,17 @@ class _BottomBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-
-          // Onayla butonu (Kişi 4'ün mantığını tetikler)
           Expanded(
             flex: 2,
             child: _GameButton(
-              label: 'CHAIN ✓',
-              color: const Color(0xFF7C4DFF),
-              onPressed: onConfirm,
+              label: chainLength > 0 ? 'CHAIN ($chainLength) ✓' : 'CHAIN ✓',
+              color: canConfirm
+                  ? const Color(0xFF7C4DFF)
+                  : const Color(0xFF4A4A6A),
+              onPressed: canConfirm ? onConfirm : () {},
             ),
           ),
           const SizedBox(width: 8),
-
-          // Yeniden başlat
           Expanded(
             child: _GameButton(
               label: 'RESTART',
@@ -273,12 +315,10 @@ class _GameButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: color.withValues(alpha:0.2),
+        backgroundColor: color.withValues(alpha: 0.2),
         foregroundColor: color,
         side: BorderSide(color: color, width: 1.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       child: Text(
@@ -294,71 +334,202 @@ class _GameButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// OYUN SONU EKRANI
+// OYUN SONU EKRANI (İSTATİSTİKLİ)
 // ─────────────────────────────────────────────────────────────────
 
 class _GameOverOverlay extends StatelessWidget {
   final int score;
+  final int correctMoves;
+  final int totalWrongMoves;
+  final int penaltyCount;
+  final int elapsedSeconds;
 
-  const _GameOverOverlay({required this.score});
+  const _GameOverOverlay({
+    required this.score,
+    required this.correctMoves,
+    required this.totalWrongMoves,
+    required this.penaltyCount,
+    required this.elapsedSeconds,
+  });
+
+  String get _formattedTime {
+    final m = elapsedSeconds ~/ 60;
+    final s = elapsedSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFFF6E40), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFF6E40).withValues(alpha:0.3),
-              blurRadius: 30,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'GAME OVER',
-              style: TextStyle(
-                color: Color(0xFFFF6E40),
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
+      child: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFFF6E40), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF6E40).withValues(alpha: 0.3),
+                blurRadius: 30,
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Your Score: $score',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () =>
-                  context.read<GameProvider>().restartGame(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6E40),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Başlık
+              const Text(
+                'GAME OVER',
+                style: TextStyle(
+                  color: Color(0xFFFF6E40),
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
                 ),
               ),
-              child: const Text(
-                'TRY AGAIN',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 6),
+
+              // Puan
+              Text(
+                '$score',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+              const Text(
+                'PUAN',
+                style: TextStyle(
+                  color: Colors.white38,
+                  fontSize: 11,
+                  letterSpacing: 3,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(color: Color(0xFF2A2A4A)),
+              const SizedBox(height: 16),
+
+              // İstatistikler
+              _StatRow(
+                icon: Icons.check_circle_outline,
+                iconColor: const Color(0xFF4CAF50),
+                label: 'Doğru Hamle',
+                value: '$correctMoves',
+              ),
+              const SizedBox(height: 10),
+              _StatRow(
+                icon: Icons.cancel_outlined,
+                iconColor: const Color(0xFFE53935),
+                label: 'Yanlış Hamle',
+                value: '$totalWrongMoves',
+              ),
+              const SizedBox(height: 10),
+              _StatRow(
+                icon: Icons.warning_amber_rounded,
+                iconColor: const Color(0xFFFF9800),
+                label: 'Ceza Sayısı',
+                value: '$penaltyCount',
+              ),
+              const SizedBox(height: 10),
+              _StatRow(
+                icon: Icons.timer_outlined,
+                iconColor: const Color(0xFF00E5FF),
+                label: 'Süre',
+                value: _formattedTime,
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(color: Color(0xFF2A2A4A)),
+              const SizedBox(height: 16),
+
+              // Butonlar
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LeaderboardScreen(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.leaderboard, size: 16),
+                      label: const Text('TABLO'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF00E5FF),
+                        side: const BorderSide(color: Color(0xFF00E5FF)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () =>
+                          context.read<GameProvider>().restartGame(),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('TEKRAR'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF6E40),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  const _StatRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 18),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,4 @@
 // lib/services/move_service.dart
-//
-// Şunları yönetir:
-//   1. Doğru hamle: blok patlatma + compact + yeni target
-//   2. Yanlış hamle: sayaç artırma + 3'te ceza
-//   3. Ceza: tüm sütunlara üstten blok indirme
 
 import 'dart:math';
 import '../models/block_model.dart';
@@ -14,42 +9,34 @@ class MoveService {
   final Random _random = Random();
 
   // ─────────────────────────────────────────────
-  // 1. DOĞRU HAMLEVILIGİ
+  // 1. DOĞRU HAMLE
   // ─────────────────────────────────────────────
 
-  /// Seçili blokları patlatır, üstteki blokları kaydırır,
-  /// puanı günceller ve yeni hedef üretir.
   GameState handleCorrectMove(GameState state) {
-    // Seçilen hücrelerin koordinatlarını al
     final selected = state.selectionChain;
 
-    // Puan hesapla (kPointValues tablosuna göre)
     int earned = 0;
     for (final b in selected) {
       earned += kPointValues[b.number] ?? 0;
     }
 
-    // Grid kopyasını al ve seçili hücreleri boşalt
     final newGrid = _copyGrid(state.grid);
     for (final b in selected) {
       newGrid[b.row][b.col] = null;
     }
 
-    // Her sütunu aşağı kaydır (compact)
     _compactGrid(newGrid);
 
-    // Yeni puan
     final newScore = state.score + earned;
-
-    // Yeni hedef sayı üret
     final newTarget = _generateTarget(newGrid, newScore);
 
     return state.copyWith(
       grid: newGrid,
       score: newScore,
       targetNumber: newTarget,
-      wrongCount: 0, // doğru hamlede yanlış sayacı sıfırla
+      wrongCount: 0,
       selectionChain: [],
+      correctMoves: state.correctMoves + 1,
     );
   }
 
@@ -57,74 +44,74 @@ class MoveService {
   // 2. YANLIŞ HAMLE
   // ─────────────────────────────────────────────
 
-  /// wrongCount'u artırır. 3'e ulaşırsa ceza uygular.
   GameState handleWrongMove(GameState state) {
     final newWrong = state.wrongCount + 1;
+    final newTotalWrong = state.totalWrongMoves + 1;
 
     if (newWrong >= kMaxWrongMoves) {
-      // Ceza: tüm sütunlara blok indir, sayacı sıfırla
       final penalized = _applyPenalty(state);
-      return penalized.copyWith(wrongCount: 0, selectionChain: []);
+      return penalized.copyWith(
+        wrongCount: 0,
+        selectionChain: [],
+        totalWrongMoves: newTotalWrong,
+        penaltyCount: state.penaltyCount + 1,
+      );
     }
 
-    return state.copyWith(wrongCount: newWrong, selectionChain: []);
+    return state.copyWith(
+      wrongCount: newWrong,
+      selectionChain: [],
+      totalWrongMoves: newTotalWrong,
+    );
   }
 
   // ─────────────────────────────────────────────
-// 3. CEZA MEKANİZMASI
-// ─────────────────────────────────────────────
+  // 3. CEZA MEKANİZMASI
+  // ─────────────────────────────────────────────
 
-/// Tüm sütunların tepesine 1 blok indirir.
-/// Herhangi bir sütun tamamen dolarsa (10 satır) oyun biter.
-GameState _applyPenalty(GameState state) {
-  final newGrid = _copyGrid(state.grid);
+  GameState _applyPenalty(GameState state) {
+    final newGrid = _copyGrid(state.grid);
 
-  for (int col = 0; col < kGridCols; col++) {
-    // ✅ O sütunda en alttaki boş satırı bul
-    int? emptyRow;
-    for (int row = kGridRows - 1; row >= 0; row--) {
-      if (newGrid[row][col] == null) {
-        emptyRow = row;
-        break;
+    for (int col = 0; col < kGridCols; col++) {
+      int? emptyRow;
+      for (int row = kGridRows - 1; row >= 0; row--) {
+        if (newGrid[row][col] == null) {
+          emptyRow = row;
+          break;
+        }
+      }
+      if (emptyRow != null) {
+        newGrid[emptyRow][col] = BlockModel(
+          number: _random.nextInt(9) + 1,
+          row: emptyRow,
+          col: col,
+        );
       }
     }
 
-    // Boş yer varsa oraya yeni bloğu yerleştir
-    if (emptyRow != null) {
-      newGrid[emptyRow][col] = BlockModel(
-        number: _random.nextInt(9) + 1,
-        row: emptyRow,
-        col: col,
-      );
-    }
+    final isGameOver = List.generate(kGridCols, (col) {
+      return List.generate(
+        kGridRows,
+        (row) => newGrid[row][col],
+      ).every((b) => b != null);
+    }).any((columnFull) => columnFull);
+
+    return state.copyWith(grid: newGrid, isGameOver: isGameOver);
   }
 
-  // Herhangi bir sütun tamamen doldu mu?
-  final isGameOver = List.generate(kGridCols, (col) {
-    return List.generate(kGridRows, (row) => newGrid[row][col])
-        .every((b) => b != null);
-  }).any((columnFull) => columnFull);
-
-  return state.copyWith(grid: newGrid, isGameOver: isGameOver);
-}
-
   // ─────────────────────────────────────────────
-  // YARDIMCI: COMPACT (üstekiler aşağı kayar)
+  // YARDIMCI: COMPACT
   // ─────────────────────────────────────────────
 
-  /// Her sütunda null olmayan blokları alta yığar (yerçekimi efekti).
   void _compactGrid(List<List<BlockModel?>> grid) {
     for (int col = 0; col < kGridCols; col++) {
-      // Sütundaki dolu hücreleri topla
       final blocks = <BlockModel>[];
       for (int row = 0; row < kGridRows; row++) {
         if (grid[row][col] != null) blocks.add(grid[row][col]!);
       }
-      // Sütunu temizle
       for (int row = 0; row < kGridRows; row++) {
         grid[row][col] = null;
       }
-      // Blokları alta yaz (row güncelle)
       int writeRow = kGridRows - 1;
       for (int i = blocks.length - 1; i >= 0; i--) {
         grid[writeRow][col] = blocks[i].copyWith(row: writeRow);
@@ -134,27 +121,22 @@ GameState _applyPenalty(GameState state) {
   }
 
   // ─────────────────────────────────────────────
-  // YARDIMCI: HEDEF SAYI ÜRETME
+  // YARDIMCI: HEDEF SAYI
   // ─────────────────────────────────────────────
 
-  /// Grid'deki komşu blok gruplarından ulaşılabilir bir hedef üretir.
-  /// Grid çok boşsa basit random döner.
   int _generateTarget(List<List<BlockModel?>> grid, int score) {
     final candidates = <int>[];
-
     for (int r = 0; r < kGridRows; r++) {
       for (int c = 0; c < kGridCols; c++) {
         if (grid[r][c] == null) continue;
         _findGroups(grid, r, c, [], candidates);
       }
     }
-
     if (candidates.isEmpty) return 2 + _random.nextInt(17);
     candidates.shuffle();
     return candidates.first;
   }
 
-  /// DFS ile 2-4 uzunluklu komşu grup toplamlarını bulur.
   void _findGroups(
     List<List<BlockModel?>> grid,
     int row,
@@ -187,10 +169,6 @@ GameState _applyPenalty(GameState state) {
       }
     }
   }
-
-  // ─────────────────────────────────────────────
-  // YARDIMCI: GRİD KOPYALAMA
-  // ─────────────────────────────────────────────
 
   List<List<BlockModel?>> _copyGrid(List<List<BlockModel?>> original) {
     return List.generate(
