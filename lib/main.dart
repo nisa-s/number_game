@@ -52,7 +52,9 @@ class GameScreen extends StatelessWidget {
               dropInterval: state.dropIntervalSeconds,
               onLeaderboard: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const LeaderboardScreen(),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -125,25 +127,19 @@ class _TopBar extends StatelessWidget {
               GestureDetector(
                 onTap: onLeaderboard,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                    ),
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.4)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.leaderboard,
-                        color: Color(0xFF00E5FF),
-                        size: 12,
-                      ),
+                      Icon(Icons.leaderboard,
+                          color: Color(0xFF00E5FF), size: 12),
                       SizedBox(width: 4),
                       Text(
                         'TOP 10',
@@ -174,15 +170,23 @@ class _TopBar extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'TARGET',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 10,
                     letterSpacing: 2,
+                  ),
+                ),
+                Text(
+                  '$targetNumber',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -318,7 +322,9 @@ class _GameButton extends StatelessWidget {
         backgroundColor: color.withValues(alpha: 0.2),
         foregroundColor: color,
         side: BorderSide(color: color, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       child: Text(

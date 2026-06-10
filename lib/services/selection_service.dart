@@ -18,22 +18,25 @@ class SelectionService {
     if (block == null) return state;
 
     final chain = List<BlockModel>.from(state.selectionChain);
+    final newGrid = _copyGrid(state.grid);
 
     // Zincir boşsa direkt ekle
     if (chain.isEmpty) {
-      block.isSelected = true;
-      chain.add(block);
-      return state.copyWith(selectionChain: chain);
+      final selected = block.copyWith(isSelected: true);
+      newGrid[row][col] = selected;
+      chain.add(selected);
+      return state.copyWith(grid: newGrid, selectionChain: chain);
     }
 
     // Zaten zincirdeyse backtrack yap
     final idx = chain.indexWhere((b) => b.row == row && b.col == col);
     if (idx != -1) {
       for (int i = idx; i < chain.length; i++) {
-        chain[i].isSelected = false;
+        final b = chain[i];
+        newGrid[b.row][b.col] = b.copyWith(isSelected: false);
       }
       chain.removeRange(idx, chain.length);
-      return state.copyWith(selectionChain: chain);
+      return state.copyWith(grid: newGrid, selectionChain: chain);
     }
 
     // Max 4 blok kontrolü
@@ -43,17 +46,27 @@ class SelectionService {
     final last = chain.last;
     if (!_isAdjacent(last.row, last.col, row, col)) return state;
 
-    block.isSelected = true;
-    chain.add(block);
-    return state.copyWith(selectionChain: chain);
+    final selected = block.copyWith(isSelected: true);
+    newGrid[row][col] = selected;
+    chain.add(selected);
+    return state.copyWith(grid: newGrid, selectionChain: chain);
   }
 
   /// Seçim zincirini tamamen temizler.
   GameState clearChain(GameState state) {
+    final newGrid = _copyGrid(state.grid);
     for (final b in state.selectionChain) {
-      b.isSelected = false;
+      newGrid[b.row][b.col] = b.copyWith(isSelected: false);
     }
-    return state.copyWith(selectionChain: []);
+    return state.copyWith(grid: newGrid, selectionChain: []);
+  }
+
+  /// Grid'in bağımsız derin kopyasını döner.
+  List<List<BlockModel?>> _copyGrid(List<List<BlockModel?>> original) {
+    return List.generate(
+      original.length,
+      (r) => List.generate(original[r].length, (c) => original[r][c]),
+    );
   }
 
   // ─────────────────────────────────────────────

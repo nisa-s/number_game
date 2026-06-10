@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../services/drop_service.dart';
 import '../services/selection_service.dart';
-import '../services/move_service.dart'; 
+import '../services/move_service.dart';
 import '../services/leaderboard_service.dart';
 
 class GameProvider extends ChangeNotifier {
   late GameState _state;
   late DropService _dropService;
   final _selectionService = SelectionService();
-  final _moveService = MoveService(); 
+  final _moveService = MoveService();
 
   GameState get state => _state;
 

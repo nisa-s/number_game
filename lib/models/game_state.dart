@@ -82,7 +82,7 @@ class GameState {
 
   /// Rastgele hedef sayı üretir (2-36 arası)
   static int _generateTargetNumber(Random random) {
-    return random.nextInt(35) + 2;
+    return random.nextInt(20) + 2;
   }
 
   /// Puana göre düşme aralığı (saniye)
