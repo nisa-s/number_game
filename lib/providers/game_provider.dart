@@ -39,18 +39,20 @@ void setPlayerName(String name) {
   void resumeGame() => _dropService.startDropTimer(() => _state);
 
   void restartGame() {
-    _dropService.stopDropTimer();
-    LeaderboardService.addScore('Oyuncu', _state.score);
-    startGame();
+  _dropService.stopDropTimer();
+  // Skor sadece oyun bitmişse kaydet
+  if (_state.isGameOver) {
+    LeaderboardService.addScore(playerName, _state.score);
   }
-
+  startGame();
+}
   void _applyState(GameState newState) {
     final oldInterval = _state.dropIntervalSeconds;
     _state = newState;
     notifyListeners();
     if (_state.isGameOver) {
       _dropService.stopDropTimer();
-      LeaderboardService.addScore(playerName, _state.score);
+   
       return;
     }
     if (newState.dropIntervalSeconds != oldInterval) {
