@@ -47,19 +47,18 @@ void setPlayerName(String name) {
   startGame();
 }
   void _applyState(GameState newState) {
-    final oldInterval = _state.dropIntervalSeconds;
-    _state = newState;
-    notifyListeners();
-    if (_state.isGameOver) {
-      _dropService.stopDropTimer();
-   
-      return;
-    }
-    if (newState.dropIntervalSeconds != oldInterval) {
-      _dropService.refreshTimerSpeed(() => _state);
-    }
+  final oldInterval = _state.dropIntervalSeconds;
+  _state = newState;
+  notifyListeners();
+  if (_state.isGameOver) {
+    _dropService.stopDropTimer();
+    LeaderboardService.addScore(playerName, _state.score); // async ama fire-and-forget OK
+    return;
   }
-
+  if (newState.dropIntervalSeconds != oldInterval) {
+    _dropService.refreshTimerSpeed(() => _state);
+  }
+}
   // ── Kişi 3: Blok seçimi ───────────────────────
   void selectBlock(int row, int col) {
     _state = _selectionService.onBlockTap(_state, row, col);

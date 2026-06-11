@@ -6,6 +6,7 @@ import 'providers/game_provider.dart';
 import 'widgets/game_grid.dart';
 import 'screens/leaderboard_screen.dart';
 import 'screens/name_entry_screen.dart';
+
 void main() {
   runApp(const StrategicNumberGame());
 }
@@ -457,12 +458,16 @@ class _GameOverOverlay extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LeaderboardScreen(),
-                        ),
-                      ),
+                      onPressed: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LeaderboardScreen()),
+                          );
+                        }
+                      },
                       icon: const Icon(Icons.leaderboard, size: 16),
                       label: const Text('TABLO'),
                       style: OutlinedButton.styleFrom(
@@ -478,8 +483,14 @@ class _GameOverOverlay extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () =>
-                          context.read<GameProvider>().restartGame(),
+                      // _GameOverOverlay içindeki butonu bul, şöyle değiştir:
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const NameEntryScreen()),
+                        );
+                      },
                       icon: const Icon(Icons.refresh, size: 16),
                       label: const Text('TEKRAR'),
                       style: ElevatedButton.styleFrom(
