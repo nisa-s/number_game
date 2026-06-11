@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/game_provider.dart';
 import 'widgets/game_grid.dart';
 import 'screens/leaderboard_screen.dart';
-
+import 'screens/name_entry_screen.dart';
 void main() {
   runApp(const StrategicNumberGame());
 }
@@ -27,7 +27,7 @@ class StrategicNumberGame extends StatelessWidget {
             secondary: Color(0xFF00E5FF),
           ),
         ),
-        home: const GameScreen(),
+        home: const NameEntryScreen(),
       ),
     );
   }

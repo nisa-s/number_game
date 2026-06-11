@@ -20,6 +20,14 @@ class GameProvider extends ChangeNotifier {
     _dropService = DropService(onStateChanged: _applyState);
   }
 
+
+
+String playerName = 'Oyuncu'; // sınıfın üstüne ekle
+
+void setPlayerName(String name) {
+  playerName = name;
+  notifyListeners();
+}
   // ── Oyun kontrol (Kişi 1 & 2) ─────────────────
   void startGame() {
     _state = GameState.initial();
@@ -42,7 +50,7 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
     if (_state.isGameOver) {
       _dropService.stopDropTimer();
-      LeaderboardService.addScore('Oyuncu', _state.score);
+      LeaderboardService.addScore(playerName, _state.score);
       return;
     }
     if (newState.dropIntervalSeconds != oldInterval) {
